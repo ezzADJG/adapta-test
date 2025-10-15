@@ -1,17 +1,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { store } from './services/store'; // <-- IMPORTAR STORE
-import { Provider } from 'react-redux';   // <-- IMPORTAR PROVIDER
+import { store } from './services/store';
+import { Provider } from 'react-redux';
+import { Toaster } from 'sonner';
 import App from './App.jsx';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* ENVOLVER TODO CON EL PROVIDER */}
     <Provider store={store}>
       <BrowserRouter>
         <App />
+        <Toaster 
+          position="bottom-right"
+          expand={false}
+          richColors
+          closeButton
+          theme="system"
+          duration={3000}
+        />
       </BrowserRouter>
     </Provider>
   </React.StrictMode>,

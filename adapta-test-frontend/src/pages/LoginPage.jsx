@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { login, reset, getInstitutions } from "../features/auth/authSlice";
+import { toast } from "sonner";
 
 // Importando los nuevos componentes de shadcn/ui
 import { BlurFade } from "../components/ui/blur-fade";
@@ -55,13 +56,33 @@ const LoginPage = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    let toastId;
+    
     if (isError) {
-      alert(message);
+      toast.error(message);
+      dispatch(reset());
     }
-    if (isSuccess || user) {
-      navigate("/dashboard");
+    
+    if (isSuccess && user) {
+      toastId = toast.loading("Iniciando sesión...", {
+        description: "Verificando credenciales y preparando tu sesión"
+      });
+      const timer = setTimeout(() => {
+        toast.success("¡Bienvenido de nuevo!", {
+          id: toastId,
+          description: `Te damos la bienvenida, ${user.name || 'Usuario'}`,
+        });
+        navigate("/dashboard");
+        dispatch(reset());
+      }, 1500);
+      
+      return () => {
+        clearTimeout(timer);
+        if (toastId) {
+          toast.dismiss(toastId);
+        }
+      };
     }
-    dispatch(reset());
   }, [user, isError, isSuccess, message, navigate, dispatch]);
 
   const onChange = (e) => {
@@ -71,7 +92,9 @@ const LoginPage = () => {
   const onSubmit = (e) => {
     e.preventDefault();
     if (!institutionId) {
-      alert("Por favor, selecciona tu institución.");
+      toast.error("Institución requerida", {
+        description: "Por favor, selecciona tu institución para continuar"
+      });
       return;
     }
     dispatch(login(formData));
