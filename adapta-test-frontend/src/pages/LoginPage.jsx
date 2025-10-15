@@ -108,7 +108,7 @@ const LoginPage = () => {
         padding: "20px",
       }}
     >
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 left-4 h-10 w-10">
         <ThemeToggle />
       </div>
       <BlurFade inView delay={0.1}>
