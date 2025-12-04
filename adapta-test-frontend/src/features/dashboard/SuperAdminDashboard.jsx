@@ -11,7 +11,6 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from ".
 import { Badge } from "../../components/ui/badge";
 import { Plus, Building2, X } from "lucide-react";
 import { createPortal } from "react-dom";
-import DashboardLayout from "../../components/layout/DashboardLayout";
 
 // Reutilizamos el estilo de Modal que usas en otros dashboards
 const ModalOverlay = ({ isOpen, onClose, children }) => {
@@ -86,7 +85,6 @@ const SuperAdminDashboard = () => {
   };
 
   return (
-
     <div className="container mx-auto px-4 py-8">
       <BlurFade inView delay={0.1}>
         <div className="flex items-center justify-between mb-8">
@@ -215,7 +213,6 @@ const SuperAdminDashboard = () => {
         </CardContent>
       </ModalOverlay>
     </div>
-  
   );
 };
 
