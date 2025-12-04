@@ -431,6 +431,7 @@ const handleBackToList = () => {
 };
 
 // --- Estilos ---
+// eslint-disable-next-line no-unused-vars
 const styles = {
   layout: { display: "flex", gap: "20px" },
   assignmentItem: {
