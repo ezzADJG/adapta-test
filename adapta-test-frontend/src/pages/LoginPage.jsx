@@ -12,6 +12,7 @@ import { Mail, Lock, Building2 } from "lucide-react";
 import "../components/ui/select-custom.css";
 import { ThemeToggle } from "../components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { AsyncSelect } from "../components/ui/async-select"
 import {
   Card,
   CardContent,
@@ -84,6 +85,31 @@ const LoginPage = () => {
       };
     }
   }, [user, isError, isSuccess, message, navigate, dispatch]);
+
+  const handleInstitutionChange = (value) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      institutionId: value,
+    }));
+  };
+  
+  const fetchInstitutions = async (query) => {
+    // Asegurarnos de que institutions esté disponible
+    const availableInstitutions = institutions || [];
+  
+    // Si no hay query, devolver todas
+    if (!query || query.trim() === "") {
+      return availableInstitutions;
+    }
+  
+    // Filtrar según el query
+    const filtered = availableInstitutions.filter(inst =>
+      inst.name.toLowerCase().includes(query.toLowerCase()) ||
+      (inst.type === "university" ? "universidad" : "colegio").includes(query.toLowerCase())
+    );
+  
+    return filtered;
+  };
 
   const onChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -191,52 +217,51 @@ const LoginPage = () => {
                   </div>
                 ) : (
                   <div className="mt-2">
-                    <Select
-                      value={institutionId}
-                      onValueChange={(value) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          institutionId: value,
-                        }))
-                      }
-                    >
-                      <SelectTrigger className="w-full bg-white dark:bg-gray-700 border dark:border-gray-600 focus:ring-0 focus-visible:ring-0 text-gray-900 dark:text-gray-100">
-                        <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400 mr-2" />
-                        <SelectValue
-                          placeholder="Elige una institución"
-                          className="select-value"
-                        />
-                      </SelectTrigger>
-                      <SelectContent
-                        className="z-50 bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100"
-                        position="popper"
-                        sideOffset={5}
-                      >
-                        <div className="max-h-[200px] overflow-y-auto">
-                          {institutions && institutions.length > 0 ? (
-                            institutions.map((inst) => (
-                              <SelectItem
-                                key={inst._id}
-                                value={inst._id}
-                                className="text-gray-900 dark:text-gray-100 data-[highlighted]:bg-gray-100 dark:data-[highlighted]:bg-gray-700/50"
-                              >
-                                <span className="block truncate">
-                                  {inst.name} (
-                                  {inst.type === "university"
-                                    ? "Universidad"
-                                    : "Colegio"}
-                                  )
-                                </span>
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem value="" disabled>
-                              No hay instituciones disponibles
-                            </SelectItem>
-                          )}
+                    <AsyncSelect
+                      fetcher={fetchInstitutions}
+                      renderOption={(inst) => (
+                        <div className="w-full flex items-center gap-2 border rounded-lg px-3 py-2 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
+                          <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                          <div className="flex flex-col">
+                            <div className="font-medium text-gray-900 dark:text-white">{inst.name}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-300">
+                              {inst.type === "university" ? "Universidad" : "Colegio"}
+                            </div>
+                          </div>
                         </div>
-                      </SelectContent>
-                    </Select>
+                      )}
+                    
+                      getOptionValue={(inst) => inst._id}
+                    
+                      getDisplayValue={(inst) => (
+                      <div className="flex items-center gap-2 text-left">
+                        <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                        <div className="flex flex-col leading-tight">
+                          <span className="font-medium text-sm text-gray-900 dark:text-white">{inst.name}</span>
+                          <span className="text-xs text-gray-600 dark:text-gray-300">
+                            {inst.type === "university" ? "Universidad" : "Colegio"}
+                          </span>
+                        </div>
+                      </div>
+                      )}
+                    
+                      notFound={
+                        <div className="py-6 text-center text-sm text-gray-600 dark:text-gray-400">
+                          No se encontraron instituciones
+                        </div>
+                      }
+                    
+                      label="Institución"
+                      placeholder="Encuentra tu institución"
+                      value={institutionId}
+                      onChange={handleInstitutionChange}
+                      width="100%"
+                      preload={true}
+                      filterFn={(inst, query) =>
+                      inst.name.toLowerCase().includes(query.toLowerCase()) ||
+                      (inst.type === "university" ? "universidad" : "colegio").includes(query.toLowerCase())
+                      }
+                    />
                   </div>
                 )}
               </div>

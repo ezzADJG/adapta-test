@@ -1,12 +1,40 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { BlurFade } from "../../components/ui/blur-fade";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { TagsSelector } from "../../components/ui/tags-selector";
+import { DatePicker } from "../../components/ui/date-picker";
+import { User,
+  Mail, 
+  Lock, 
+  GraduationCap, 
+  Book, 
+  X, 
+  Plus, 
+  FileText, 
+  Timer, 
+  BookPlus, 
+  CircleUserRound,
+  LibraryBig,
+  UserCog,
+} from "lucide-react";
 import axios from "axios";
-
-// --- Acciones de Redux ---
 import { register, reset as resetAuth } from "../auth/authSlice";
+import { Typewriter } from "../../components/ui/typewriter-text";
+import { Label } from "../../components/ui/label";
+import { Input } from "../../components/ui/input";
+import { Button } from "../../components/ui/button";
+import { HoverButton } from "../../components/ui/hover-button";
+import { SelectNative } from "../../components/ui/select-native";
+import AdminUsersTable from "../../components/AdminUsersTable";
+import AdminCoursesTable from "../../components/AdminCoursesTable";
+import AdminCyclesTable from "../../components/AdminCyclesTable";
+import { Component as BauhausCard } from "../../components/bauhaus-card";
+
 import {
-  getUsers, // <-- Nos aseguraremos de llamar a esta desde el padre
+  getUsers,
   getCoordinators,
   getProfessors,
   reset as resetUsers,
@@ -30,17 +58,62 @@ import {
 import { store } from "../../services/store";
 
 // ##################################################################
-// ### Sub-componentes (Sin cambios, pero incluidos para completitud) ###
+// ### Modal Overlay Component ###
+// ##################################################################
+const ModalOverlay = ({ isOpen, onClose, children }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div style={modalStyles.overlay} onClick={onClose}>
+      <div style={modalStyles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={onClose}
+          style={modalStyles.closeButton}
+          aria-label="Cerrar"
+        >
+          <X size={20} />
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// ##################################################################
+// ### Sub-componentes ###
 // ##################################################################
 
 const AssignCoordinatorModal = ({ career, onClose }) => {
   const dispatch = useDispatch();
   const { coordinators, isLoading } = useSelector((state) => state.users);
+  const { careers: allCareers } = useSelector((state) => state.careers); // obtener todas las carreras
   const [selectedCoordinator, setSelectedCoordinator] = useState("");
 
   useEffect(() => {
     dispatch(getCoordinators());
+    // asegurar que las carreras estén cargadas para el filtrado
+    if (!allCareers || allCareers.length === 0) {
+      dispatch(getCareers());
+    }
   }, [dispatch]);
+
+  // Construir set de IDs de coordinadores ya asignados (robusto contra distintos shapes)
+  const assignedCoordinatorIds = new Set();
+  (allCareers || []).forEach((cr) => {
+    if (!cr) return;
+    const coord = cr.coordinator;
+    if (!coord) return;
+    const id = typeof coord === "string" ? coord : (coord._id || coord.id);
+    if (id) assignedCoordinatorIds.add(String(id));
+  });
+
+  // Filtrar coordinadores que NO tienen ya una carrera asignada (excluir IDs en assignedCoordinatorIds)
+  const availableCoordinators = (coordinators || []).filter((c) => {
+    const id = c && (c._id || c.id) ? String(c._id || c.id) : null;
+    const isAssigned = id ? assignedCoordinatorIds.has(id) : false;
+    const isCoordinatorRole = c.role ? c.role === "coordinator" : true;
+    return !isAssigned && isCoordinatorRole;
+  });
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -53,46 +126,80 @@ const AssignCoordinatorModal = ({ career, onClose }) => {
   };
 
   return (
-    <div style={modalStyles.overlay}>
-      <div style={modalStyles.modal}>
-        <h2>Asignar Coordinador a: {career.name}</h2>
-        {isLoading ? (
-          <p>Cargando coordinadores...</p>
-        ) : (
-          <form onSubmit={onSubmit}>
-            <select
-              value={selectedCoordinator}
-              onChange={(e) => setSelectedCoordinator(e.target.value)}
-              required
-              style={{ width: "100%", padding: "10px", marginBottom: "20px" }}
-            >
-              <option value="">-- Selecciona un coordinador --</option>
-              {coordinators.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name} ({c.email})
-                </option>
-              ))}
-            </select>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "10px",
-              }}
-            >
-              <button type="button" onClick={onClose}>
-                Cancelar
-              </button>
-              <button type="submit">Asignar</button>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
+    <ModalOverlay isOpen={true} onClose={onClose}>
+      <BlurFade inView delay={0.1}>
+        <Card className="w-full max-w-md shadow-xl rounded-3xl border-0 bg-card">
+          <CardHeader className="space-y-2 pb-4">
+            <CardTitle className="text-2xl font-semibold text-center text-foreground">
+              Asignar Coordinador
+            </CardTitle>
+            <p className="text-sm text-center text-muted-foreground mt-1">
+              {career.name}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isLoading ? (
+              <p className="text-center text-muted-foreground">Cargando coordinadores...</p>
+            ) : (
+              <form onSubmit={onSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-foreground">
+                    Selecciona un Coordinador
+                  </Label>
+
+                  {/* Si no hay coordinadores disponibles, mostrar mensaje */}
+                  {availableCoordinators.length === 0 ? (
+                    <div className="rounded-lg border px-4 py-3 bg-muted/10 text-sm text-muted-foreground">
+                      No hay coordinadores disponibles sin asignación de carrera.
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                      <User className="w-5 h-5 text-muted-foreground" />
+                      <SelectNative
+                        value={selectedCoordinator}
+                        onChange={(e) => setSelectedCoordinator(e.target.value)}
+                        required
+                        className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                      >
+                        <option value="">-- Selecciona un coordinador --</option>
+                        {availableCoordinators.map((c) => (
+                          <option key={c._id} value={c._id}>
+                            {c.name} ({c.email})
+                          </option>
+                        ))}
+                      </SelectNative>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-3 mt-6">
+                  <Button
+                    type="button"
+                    onClick={onClose}
+                    variant="outline"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="default"
+                    disabled={availableCoordinators.length === 0}
+                  >
+                    Asignar
+                  </Button>
+                </div>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      </BlurFade>
+    </ModalOverlay>
   );
 };
+
 const CareerManagementTab = ({ careers, onAssignCoordinatorClick }) => {
   const dispatch = useDispatch();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [degrees, setDegrees] = useState("");
@@ -108,99 +215,165 @@ const CareerManagementTab = ({ careers, onAssignCoordinatorClick }) => {
     setDescription("");
     setDegrees("");
     setDuration("");
+    setIsModalOpen(false);
   };
 
   return (
     <section>
-      <h2>Lista de Carreras</h2>
-      {careers.map((career) => (
-        <div key={career._id} style={styles.card}>
-          <h3>{career.name}</h3>
-          <p>{career.description}</p>
-          <p>
-            <strong>Duración:</strong> {career.duration}
-          </p>
-          <p>
-            <strong>Grados:</strong> {career.degrees.join(", ")}
-          </p>
-          <small>
-            Coordinador:{" "}
-            {career.coordinator ? career.coordinator.name : "No asignado"}
-          </small>
-          <div style={{ marginTop: "15px" }}>
-            <button onClick={() => onAssignCoordinatorClick(career)}>
-              {career.coordinator
-                ? "Cambiar Coordinador"
-                : "Asignar Coordinador"}
-            </button>
-            <Link
-              to={`/career/${career._id}/curriculum`}
-              style={{ marginLeft: "10px" }}
-            >
-              <button>Ver Malla</button>
-            </Link>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ marginTop: '10px'}} className="flex items-start gap-3">
+          <div className="bg-white/10 p-2.5 rounded-lg backdrop-blur-sm">
+            <GraduationCap className="w-6 h-6" />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold mb-2">Lista de Carreras</h1>
           </div>
         </div>
-      ))}
-      <div style={styles.formContainer}>
-        <h3>Crear Nueva Carrera</h3>
-        <form onSubmit={handleCreateCareer}>
-          <div style={styles.formGroup}>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Nombre de la Carrera"
-              required
-              style={styles.input}
-            />
-          </div>
-          <div style={styles.formGroup}>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descripción"
-              required
-              style={{ ...styles.input, height: "80px" }}
-            />
-          </div>
-          <div style={styles.formGroup}>
-            <input
-              type="text"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              placeholder="Duración (ej. 10 Ciclos)"
-              required
-              style={styles.input}
-            />
-          </div>
-          <div style={styles.formGroup}>
-            <input
-              type="text"
-              value={degrees}
-              onChange={(e) => setDegrees(e.target.value)}
-              placeholder="Grados (separados por comas)"
-              required
-              style={styles.input}
-            />
-          </div>
-          <button type="submit">Crear Carrera</button>
-        </form>
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          variant="default"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg"
+        >
+          <Plus size={20} />
+          Nueva Carrera
+        </Button>
       </div>
+
+      {/* Grid de tarjetas Bauhaus para cada carrera */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        {careers.map((career) => (
+          <div key={career._id} className="p-2">
+            <BauhausCard
+              id={career._id}
+              topInscription={career.duration || ""}
+              mainText={career.name || "Sin nombre"}
+              subMainText={career.description || ""}
+              filledButtonInscription={career.coordinator ? "Cambiar Coordinador" : "Asignar Coordinador"}
+              outlinedButtonInscription="Ver Malla"
+              onFilledButtonClick={() => onAssignCoordinatorClick(career)}
+              onOutlinedButtonClick={() => { window.location.href = `/career/${career._id}/curriculum`; }}
+              /* Use theme-aware CSS variables (Tailwind theme tokens) so cards adapt to light/dark */
+              accentColor={`hsl(var(--primary))`}
+              backgroundColor={`hsl(var(--card))`}
+              textColorMain={`hsl(var(--card-foreground))`}
+              textColorSub={`hsl(var(--muted-foreground))`}
+              chronicleButtonBg={`transparent`}
+              chronicleButtonFg={`hsl(var(--foreground))`}
+              chronicleButtonHoverFg={`hsl(var(--primary-foreground))`}
+            />
+          </div>
+        ))}
+      </div>
+
+      <ModalOverlay isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <BlurFade inView delay={0.1}>
+          <Card className="w-full max-w-md shadow-xl rounded-3xl border-0 bg-card">
+            <CardHeader className="space-y-2 pb-4">
+              <CardTitle className="text-2xl font-semibold text-center text-foreground">
+                <Typewriter text={["Crear Nueva Carrera"]} speed={150} />
+              </CardTitle>
+              <p className="text-sm text-center text-muted-foreground mt-1">
+                Completa el formulario para registrar una nueva carrera
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <form onSubmit={handleCreateCareer} className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-foreground">
+                    Nombre de la Carrera
+                  </Label>
+                  <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                    <GraduationCap className="w-5 h-5 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Ingrese Nombre de la Carrera"
+                      required
+                      className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-foreground">
+                    Descripción
+                  </Label>
+                  <div className="flex items-start gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                    <FileText className="w-5 h-5 text-muted-foreground mt-1" />
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Ingrese la Descripción"
+                      required
+                      className="w-full border-0 bg-transparent focus:outline-none focus:ring-0 resize-none text-foreground"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-foreground">
+                    Duración
+                  </Label>
+                  <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                    <Timer className="w-5 h-5 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value)}
+                      placeholder="Ingrese la Duración (ej. 10 Ciclos)"
+                      required
+                      className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-foreground">
+                    Grados
+                  </Label>
+                  <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                    <BookPlus className="w-5 h-5 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      value={degrees}
+                      onChange={(e) => setDegrees(e.target.value)}
+                      placeholder="Ingrese los Grados (separados por comas)"
+                      required
+                      className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full mt-6 py-3 rounded-lg font-medium shadow-md transition-colors"
+                >
+                  Crear Carrera
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </BlurFade>
+      </ModalOverlay>
     </section>
   );
 };
+
 const CourseManagementTab = ({ courses }) => {
   const dispatch = useDispatch();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [prerequisites, setPrerequisites] = useState([]);
 
-  const handlePrerequisitesChange = (e) => {
-    const selectedIds = Array.from(
-      e.target.selectedOptions,
-      (option) => option.value
-    );
+  const courseTags = courses.map((course) => ({
+    id: course._id,
+    label: course.title
+  }));
+
+  const handlePrerequisitesChange = (selectedIds) => {
     setPrerequisites(selectedIds);
   };
 
@@ -210,69 +383,104 @@ const CourseManagementTab = ({ courses }) => {
     setTitle("");
     setDescription("");
     setPrerequisites([]);
+    setIsModalOpen(false);
   };
 
   return (
     <section>
-      <h2>Catálogo de Cursos</h2>
-      {courses.map((course) => (
-        <div key={course._id} style={styles.card}>
-          <p>
-            <strong>{course.title}</strong>
-          </p>
-          <small>ID: {course._id}</small>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ marginTop: '10px'}} className="flex items-start gap-3">
+          <div className="bg-white/10 p-2.5 rounded-lg backdrop-blur-sm">
+            <FileText className="w-6 h-6" />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold mb-2">Catálogo de Cursos</h1>
+          </div>
         </div>
-      ))}
-      <div style={styles.formContainer}>
-        <h3>Crear Nuevo Curso</h3>
-        <form onSubmit={handleCreateCourse}>
-          <div style={styles.formGroup}>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Título del Curso"
-              required
-              style={styles.input}
-            />
-          </div>
-          <div style={styles.formGroup}>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descripción"
-              required
-              style={{ ...styles.input, height: "80px" }}
-            />
-          </div>
-          <div style={styles.formGroup}>
-            <label>
-              Prerrequisitos (mantén Ctrl o Cmd para seleccionar varios):
-            </label>
-            <br />
-            <select
-              multiple={true}
-              value={prerequisites}
-              onChange={handlePrerequisitesChange}
-              style={{ ...styles.input, height: "150px" }}
-            >
-              {courses.map((course) => (
-                <option key={course._id} value={course._id}>
-                  {course.title}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button type="submit">Crear Curso</button>
-        </form>
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          variant="default"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg"
+        >
+          <Plus size={20} />
+          Nuevo Curso
+        </Button>
       </div>
+
+      {/* Usar la tabla de administración de cursos */}
+      <AdminCoursesTable />
+
+      <ModalOverlay isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <BlurFade inView delay={0.1}>
+          <Card className="w-full max-w-md shadow-xl rounded-3xl border-0 bg-card">
+            <CardHeader className="space-y-2 pb-4">
+              <CardTitle className="text-2xl font-semibold text-center text-foreground">
+                <Typewriter text={["Crear Nuevo Curso"]} speed={150} />
+              </CardTitle>
+              <p className="text-sm text-center text-muted-foreground mt-1">
+                Completa el formulario para crear un nuevo curso
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <form onSubmit={handleCreateCourse} className="space-y-4">
+                <Label className="text-foreground">Titulo del Curso</Label>
+                <div className="flex items-center gap-2 border rounded-lg px-3 py-2 bg-card">
+                  <Book className="w-5 h-5 text-muted-foreground mt-1"/>
+                  <Input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Título del Curso"
+                    required
+                    className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                  />
+                </div>
+                <Label className="text-foreground">Descripcion del Curso</Label>
+                <div className="flex items-center gap-2 border rounded-lg px-3 py-2 bg-card">
+                  <FileText className="w-5 h-5 text-muted-foreground mt-1"/>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Descripción"
+                    required
+                    className="w-full border-0 bg-transparent focus:outline-none focus:ring-0 resize-none text-foreground"
+                  />
+                </div>
+                
+                <Label className="text-foreground">Prerrequisitos</Label>
+                <div className="flex items-start gap-2 border rounded-lg px-3 py-2 bg-card min-h-[100px]">
+                  <LibraryBig className="w-5 h-5 text-muted-foreground mt-1 flex-shrink-0"/>
+                  <div className="w-full">
+                    <TagsSelector 
+                      tags={courseTags}
+                      value={prerequisites}
+                      onChange={handlePrerequisitesChange}
+                      placeholder="Selecciona los cursos prerequisitos"
+                      className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                    />
+                  </div>
+                </div>
+                
+                <Button type="submit" variant="default" className="w-full rounded-xl hover:cursor-pointer font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                  Crear Curso
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </BlurFade>
+      </ModalOverlay>
     </section>
   );
 };
+
 const AcademicManagementTab = ({ courses, professors, cycles }) => {
   const dispatch = useDispatch();
+  const [isCycleModalOpen, setIsCycleModalOpen] = useState(false);
+  const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
+  
   const [cycleName, setCycleName] = useState("");
-  const [startDate, setStartDate] = useState("");
+  // startDate is stored as ISO string (or null) and passed to DatePicker as Date
+  const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState("");
 
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -283,10 +491,12 @@ const AcademicManagementTab = ({ courses, professors, cycles }) => {
 
   const handleCreateCycle = (e) => {
     e.preventDefault();
+    // startDate is an ISO string (or null); endDate remains as string from the input
     dispatch(createCycle({ name: cycleName, startDate, endDate }));
     setCycleName("");
     setStartDate("");
     setEndDate("");
+    setIsCycleModalOpen(false);
   };
 
   const handleCreateSection = async (e) => {
@@ -303,6 +513,7 @@ const AcademicManagementTab = ({ courses, professors, cycles }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("¡Sección creada exitosamente!");
+      setIsSectionModalOpen(false);
     } catch (error) {
       alert("Error al crear la sección: " + error.response.data.message);
     }
@@ -310,131 +521,203 @@ const AcademicManagementTab = ({ courses, professors, cycles }) => {
 
   return (
     <section>
-      <h2>Gestión de Ciclos y Secciones</h2>
-      <div style={styles.formContainer}>
-        <h3>Crear Nuevo Ciclo Académico</h3>
-        <form onSubmit={handleCreateCycle}>
-          <div style={styles.formGroup}>
-            <input
-              type="text"
-              value={cycleName}
-              onChange={(e) => setCycleName(e.target.value)}
-              placeholder="Nombre del Ciclo (ej. 2025-II)"
-              required
-              style={styles.input}
-            />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ marginTop: '10px'}} className="flex items-start gap-3">
+          <div className="bg-white/10 p-2.5 rounded-lg backdrop-blur-sm">
+            <BookPlus className="w-6 h-6" />
           </div>
-          <div style={styles.formGroup}>
-            <label>Fecha de Inicio:</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              required
-              style={styles.input}
-            />
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold mb-2">Gestión de Ciclos y Secciones</h1>
           </div>
-          <div style={styles.formGroup}>
-            <label>Fecha de Fin:</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              required
-              style={styles.input}
-            />
-          </div>
-          <button type="submit">Crear Ciclo</button>
-        </form>
+        </div>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <Button
+            onClick={() => setIsCycleModalOpen(true)}
+            variant="default"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg"
+          >
+            <Plus size={20} />
+            Nuevo Ciclo
+          </Button>
+          <Button
+            onClick={() => setIsSectionModalOpen(true)}
+            variant="default"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg"
+          >
+            <Plus size={20} />
+            Nueva Sección
+          </Button>
+        </div>
       </div>
 
-      <div style={styles.formContainer}>
-        <h3>Crear Nueva Sección</h3>
-        <form onSubmit={handleCreateSection}>
-          <div style={styles.formGroup}>
-            <label>Curso:</label>
-            <select
-              value={selectedCourse}
-              onChange={(e) => setSelectedCourse(e.target.value)}
-              required
-              style={styles.input}
-            >
-              <option value="">-- Selecciona --</option>
-              {courses.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.title}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div style={styles.formGroup}>
-            <label>Profesor:</label>
-            <select
-              value={selectedProfessor}
-              onChange={(e) => setSelectedProfessor(e.target.value)}
-              required
-              style={styles.input}
-            >
-              <option value="">-- Selecciona --</option>
-              {professors.map((p) => (
-                <option key={p._id} value={p._id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div style={styles.formGroup}>
-            <label>Ciclo Académico:</label>
-            <select
-              value={selectedCycle}
-              onChange={(e) => setSelectedCycle(e.target.value)}
-              required
-              style={styles.input}
-            >
-              <option value="">-- Selecciona --</option>
-              {cycles.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div style={styles.formGroup}>
-            <label>Código de Sección (ej. G1):</label>
-            <input
-              type="text"
-              value={sectionCode}
-              onChange={(e) => setSectionCode(e.target.value)}
-              required
-              style={styles.input}
-            />
-          </div>
-          <div style={styles.formGroup}>
-            <label>Capacidad:</label>
-            <input
-              type="number"
-              min="1"
-              value={capacity}
-              onChange={(e) => setCapacity(e.target.value)}
-              required
-              style={styles.input}
-            />
-          </div>
-          <button type="submit">Crear Sección</button>
-        </form>
-      </div>
+      {/* Tabla de ciclos académicos */}
+      <h3 style={{ marginTop: '10px', marginBottom: '15px' }}>Ciclos Académicos</h3>
+      <AdminCyclesTable />
+      <ModalOverlay isOpen={isCycleModalOpen} onClose={() => setIsCycleModalOpen(false)}>
+        <BlurFade inView delay={0.1}>
+          <Card className="w-full max-w-md shadow-xl rounded-3xl border-0 bg-card">
+            <CardHeader className="space-y-2 pb-4">
+              <CardTitle className="text-2xl font-semibold text-center text-foreground">
+                <Typewriter text={["Crear Nuevo Ciclo"]} speed={150} />
+              </CardTitle>
+              <p className="text-sm text-center text-muted-foreground mt-1">
+                Completa el formulario para crear un nuevo ciclo
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <form onSubmit={handleCreateCycle}>
+                <Label className="text-sm font-medium text-foreground">Nombre del ciclo:</Label>
+                <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                  <Input
+                    type="text"
+                    value={cycleName}
+                    onChange={(e) => setCycleName(e.target.value)}
+                    placeholder="Nombre del Ciclo (ej. 2025-II)"
+                    required
+                    className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                  />
+                </div>
+                <Label className="text-sm font-medium text-foreground">Fecha de Inicio:</Label>
+                <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                  <DatePicker
+                    date={startDate ? new Date(startDate) : null}
+                    onDateChange={(date) => setStartDate(date ? date.toISOString() : "")}
+                    required
+                    className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                  />
+                </div>
+                <Label className="text-sm font-medium text-foreground">Fecha de Fin:</Label>
+                <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                   <DatePicker
+                     date={endDate ? new Date(endDate) : null}
+                     onDateChange={(date) => setEndDate(date ? date.toISOString() : "")}
+                     required
+                     className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground bg-card"
+                   />
+                 </div>
+                <Button type="submit" variant="default" className="w-full rounded-xl hover:cursor-pointer font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                  Crear Ciclo
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </BlurFade>
+      </ModalOverlay>
+
+      <ModalOverlay isOpen={isSectionModalOpen} onClose={() => setIsSectionModalOpen(false)}>
+        <BlurFade inView delay={0.1}>
+          <Card className="w-full max-w-md shadow-xl rounded-3xl border-0 bg-card">
+            <CardHeader className="space-y-2 pb-4">
+              <CardTitle className="text-2xl font-semibold text-center text-foreground">
+                <Typewriter text={["Crear Nueva Seccion"]} speed={150} />
+              </CardTitle>
+              <p className="text-sm text-center text-muted-foreground mt-1">
+                Completa el formulario para crear una nueva sección
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <form onSubmit={handleCreateSection} className="space-y-4">
+                <Label className="text-sm font-medium text-foreground">
+                  Curso:
+                </Label>
+                <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                  <Book className="w-5 h-5 text-muted-foreground mt-1 flex-shrink-0"/>
+                  <SelectNative
+                    value={selectedCourse}
+                    onChange={(e) => setSelectedCourse(e.target.value)}
+                    required
+                    className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                  >
+                    <option value="">-- Selecciona --</option>
+                    {courses.map((c) => (
+                      <option key={c._id} value={c._id}>
+                        {c.title}
+                      </option>
+                    ))}
+                  </SelectNative>
+                </div>
+                <Label className="text-sm font-medium text-foreground">
+                  Profesor:
+                </Label>
+                <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                  <User className="w-5 h-5 text-muted-foreground mt-1 flex-shrink-0"/>
+                  <SelectNative
+                    value={selectedProfessor}
+                    onChange={(e) => setSelectedProfessor(e.target.value)}
+                    required
+                    className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                  >
+                    <option value="">-- Selecciona --</option>
+                    {professors.map((p) => (
+                      <option key={p._id} value={p._id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </SelectNative>
+                </div>
+                <Label className="text-sm font-medium text-foreground">
+                  Ciclo Academico:
+                </Label>
+                <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                  <LibraryBig className="w-5 h-5 text-muted-foreground mt-1 flex-shrink-0"/>
+                  <SelectNative
+                    value={selectedCycle}
+                    onChange={(e) => setSelectedCycle(e.target.value)}
+                    required
+                    className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                  >
+                    <option value="">-- Selecciona --</option>
+                    {cycles.map((c) => (
+                      <option key={c._id} value={c._id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </SelectNative>
+                </div>
+                <Label className="text-sm font-medium text-foreground">
+                  Código de Sección
+                </Label>
+                <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                  <Plus className="w-5 h-5 text-muted-foreground mt-1 flex-shrink-0"/>
+                  <Input
+                    type="text"
+                    value={sectionCode}
+                    onChange={(e) => setSectionCode(e.target.value)}
+                    required
+                    className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                  />
+                </div>
+                <Label className="text-sm font-medium text-foreground">
+                  Capacidad:
+                </Label>
+                <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                  <UserCog className="w-5 h-5 text-muted-foreground mt-1 flex-shrink-0"/>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={capacity}
+                    onChange={(e) => setCapacity(e.target.value)}
+                    required
+                    className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                  />
+                </div>
+                <Button type="submit" variant="default" className="w-full mt-6 py-3 rounded-lg hover:cursor-pointer font-medium shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  Crear Sección
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </BlurFade>
+      </ModalOverlay>
     </section>
   );
 };
 
-// ##################################################################
-// ### Sub-componente CORREGIDO: Pestaña para Gestionar Usuarios ###
-// ##################################################################
 const UserManagementTab = () => {
   const dispatch = useDispatch();
   const { user: adminUser } = useSelector((state) => state.auth);
-  // Leemos los datos que el componente padre ya solicitó
   const { users, isLoading } = useSelector((state) => state.users);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -443,8 +726,6 @@ const UserManagementTab = () => {
     role: "",
   });
   const { name, email, password, role } = formData;
-
-  // YA NO NECESITAMOS EL useEffect aquí para pedir los datos
 
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -456,7 +737,8 @@ const UserManagementTab = () => {
       .then(() => {
         alert(`Usuario ${name} creado exitosamente!`);
         setFormData({ name: "", email: "", password: "", role: "" });
-        dispatch(getUsers()); // Refrescar la lista de usuarios tras la creación
+        dispatch(getUsers());
+        setIsModalOpen(false);
       })
       .catch((error) => alert(`Error al crear usuario: ${error}`));
   };
@@ -466,85 +748,144 @@ const UserManagementTab = () => {
     institutionType === "university"
       ? ["student", "professor", "coordinator", "admin"]
       : ["student", "professor", "parent", "admin"];
-
   return (
     <section>
-      <h2>Usuarios de la Institución</h2>
-      {isLoading ? (
-        <p>Cargando usuarios...</p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {users &&
-            users.map((u) => (
-              <li key={u._id} style={styles.card}>
-                <strong>{u.name}</strong> ({u.email}) - Rol: {u.role}
-              </li>
-            ))}
-        </ul>
-      )}
-
-      <div style={styles.formContainer}>
-        <h3>Crear Nuevo Usuario</h3>
-        <form onSubmit={onSubmit}>
-          <input
-            name="name"
-            value={name}
-            onChange={onChange}
-            placeholder="Nombre completo"
-            required
-            style={styles.input}
-          />
-          <input
-            name="email"
-            value={email}
-            type="email"
-            onChange={onChange}
-            placeholder="Correo electrónico"
-            required
-            style={styles.input}
-          />
-          <input
-            name="password"
-            value={password}
-            type="password"
-            onChange={onChange}
-            placeholder="Contraseña temporal"
-            required
-            style={styles.input}
-          />
-          <select
-            name="role"
-            value={role}
-            onChange={onChange}
-            required
-            style={styles.input}
-          >
-            <option value="" disabled>
-              -- Selecciona un rol --
-            </option>
-            {allowedRoles.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
-          <button type="submit" style={{ marginTop: "10px" }}>
-            Crear Usuario
-          </button>
-        </form>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ marginTop: '10px'}} className="flex items-start gap-3">
+          <div className="bg-white/10 p-2.5 rounded-lg backdrop-blur-sm">
+            <User className="w-6 h-6" />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold mb-2">Usuarios de la Institución</h1>
+          </div>
+        </div>
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          variant="default"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg"
+        >
+          <Plus size={20} />
+          Nuevo Usuario
+        </Button>
       </div>
+
+      {/* Usar la tabla de administración de usuarios */}
+      <AdminUsersTable />
+      
+      <ModalOverlay isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <BlurFade inView delay={0.1}>
+          <Card className="w-full max-w-md shadow-xl rounded-3xl border-0 bg-card">
+            <CardHeader className="space-y-2 pb-4">
+              <CardTitle className="text-2xl font-semibold text-center text-foreground">
+                <Typewriter text={["Crear Nuevo Usuario"]} speed={150} />
+              </CardTitle>
+              <p className="text-sm text-center text-muted-foreground mt-1">
+                Completa el formulario para registrar un nuevo usuario
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <form onSubmit={onSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-foreground">
+                    Nombre Completo
+                  </Label>
+                  <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                    <User className="w-5 h-5 text-muted-foreground" />
+                    <Input
+                      name="name"
+                      value={name}
+                      onChange={onChange}
+                      placeholder="Ingrese el Nombre completo"
+                      required
+                      className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-foreground">
+                    Correo electrónico
+                  </Label>
+                  <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                    <Mail className="w-5 h-5 text-muted-foreground" />
+                    <Input
+                      name="email"
+                      value={email}
+                      type="email"
+                      onChange={onChange}
+                      placeholder="Ingrese el Correo electrónico"
+                      required
+                      className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-foreground">
+                    Contraseña
+                  </Label>
+                  <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                    <Lock className="w-5 h-5 text-muted-foreground" />
+                    <Input
+                      name="password"
+                      value={password}
+                      type="password"
+                      onChange={onChange}
+                      placeholder="Ingrese la Contraseña temporal"
+                      required
+                      className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-foreground">Rol</Label>
+                  <div className="flex items-center gap-2 border rounded-lg px-3 py-2.5 bg-card focus-within:ring-2">
+                    <CircleUserRound className="w-5 h-5 text-muted-foreground"/>
+                    <SelectNative
+                      name="role"
+                      value={role}
+                      onChange={onChange}
+                      required
+                      className="w-full border-0 focus-visible:ring-0 focus-visible:outline-none shadow-none text-foreground"
+                    >
+                      <option value="" disabled>
+                        -- Selecciona un rol --
+                      </option>
+                      {allowedRoles.map((r) => (
+                        <option key={r} value={r}>
+                          {r}
+                        </option>
+                      ))}
+                    </SelectNative>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  variant="default"
+                  className="w-full mt-6 py-3 rounded-lg hover:cursor-pointer font-medium shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Crear Usuario
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </BlurFade>
+      </ModalOverlay>
     </section>
   );
 };
 
 // ######################################################################
-// ### Componente Principal CORREGIDO: Dashboard de Administrador ###
+// ### Componente Principal ###
 // ######################################################################
 const AdminDashboard = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useSelector((state) => state.auth);
 
-  // Unificamos todos los estados de carga aquí
   const { careers, isLoading: careersLoading } = useSelector(
     (state) => state.careers
   );
@@ -560,7 +901,6 @@ const AdminDashboard = () => {
     cycles: state.academicCycles.cycles,
     isLoading: state.users.isLoading || state.academicCycles.isLoading,
   }));
-  // El estado de carga para `getUsers` viene del mismo slice que `getProfessors`.
   const { isLoading: usersLoading } = useSelector((state) => state.users);
 
   const [modalCareer, setModalCareer] = useState(null);
@@ -569,8 +909,15 @@ const AdminDashboard = () => {
   const isUniversity = user.institution.type === "university";
 
   useEffect(() => {
-    // El padre despacha TODAS las acciones necesarias al montarse
-    dispatch(getUsers()); // <-- LLAMADA CENTRALIZADA
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    dispatch(getUsers());
     if (isUniversity) {
       dispatch(getCareers());
       dispatch(getCoordinators());
@@ -580,7 +927,6 @@ const AdminDashboard = () => {
     dispatch(getCycles());
 
     return () => {
-      // La limpieza se mantiene en el padre
       dispatch(resetCareers());
       dispatch(resetCourses());
       dispatch(resetUsers());
@@ -589,42 +935,15 @@ const AdminDashboard = () => {
     };
   }, [dispatch, isUniversity]);
 
-  // Un solo indicador de carga para todo el dashboard
   const isLoadingData =
     usersLoading || careersLoading || coursesLoading || academicLoading;
 
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    navigate(`/dashboard?tab=${tab}`);
+  };
   return (
     <div>
-      <h1>Dashboard de Administración</h1>
-      <nav style={styles.nav}>
-        <button
-          onClick={() => setActiveTab("users")}
-          style={getTabStyle("users", activeTab)}
-        >
-          Gestionar Usuarios
-        </button>
-        {isUniversity && (
-          <button
-            onClick={() => setActiveTab("careers")}
-            style={getTabStyle("careers", activeTab)}
-          >
-            Gestionar Carreras
-          </button>
-        )}
-        <button
-          onClick={() => setActiveTab("courses")}
-          style={getTabStyle("courses", activeTab)}
-        >
-          Gestionar Cursos
-        </button>
-        <button
-          onClick={() => setActiveTab("academic")}
-          style={getTabStyle("academic", activeTab)}
-        >
-          Gestión Académica
-        </button>
-      </nav>
-
       {isLoadingData ? (
         <h3>Cargando datos de administración...</h3>
       ) : (
@@ -656,7 +975,6 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
 // --- Estilos ---
 const styles = {
   card: {
