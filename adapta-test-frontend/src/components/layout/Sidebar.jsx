@@ -305,6 +305,40 @@ export function Sidebar({ isCollapsed, onToggle }) {
     );
   }
 
+  if (user?.role === "superadmin") {
+    return (
+      <aside
+        data-collapsed={isCollapsed}
+        className={cn(
+          "bg-card border-r shadow-lg transition-all duration-300 ease-in-out",
+          "h-screen sticky top-0 left-0 z-40 flex flex-col",
+          isCollapsed ? "w-20" : "w-64"
+        )}
+      >
+        <div className={cn("h-16 border-b flex items-center transition-all duration-300 relative", isCollapsed ? "justify-center px-2" : "px-4")}>
+          <Link to="/dashboard" className="flex items-center gap-2 overflow-hidden">
+            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold flex-shrink-0">
+              S
+            </div>
+            <div className={cn("flex flex-col transition-opacity", isCollapsed && "opacity-0 hidden")}>
+              <span className="font-bold text-lg tracking-tight whitespace-nowrap">Super Admin</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap truncate">Gestión Global</span>
+            </div>
+          </Link>
+        </div>
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-4 space-y-4">
+          <SidebarLink
+            icon={LayoutDashboard} // Asegúrate de importar LayoutDashboard arriba
+            label="Instituciones"
+            to="/dashboard"
+            active={isActive("/dashboard")}
+            isCollapsed={isCollapsed}
+          />
+        </nav>
+      </aside>
+    );
+  }
+
   // COORDINATOR
   if (user?.role === "coordinator") {
     return (
