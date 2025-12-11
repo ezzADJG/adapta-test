@@ -1,10 +1,10 @@
-import axios from 'axios';
-const API_URL = '/api/analytics/';
+import axiosClient from '../../config/axiosClient';
+const BASE_ROUTE = '/analytics';
 
 // Obtener las analíticas para una sección específica
 const getSectionAnalytics = async (sectionId, token) => {
     const config = { headers: { Authorization: `Bearer ${token}` } };
-    const response = await axios.get(`${API_URL}section/${sectionId}`, config);
+    const response = await axiosClient.get(`${BASE_ROUTE}/section/${sectionId}`, config);
     return response.data;
 };
 

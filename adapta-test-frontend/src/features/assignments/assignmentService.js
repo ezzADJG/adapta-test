@@ -1,14 +1,14 @@
-import axios from 'axios';
+import axiosClient from '../../config/axiosClient';
 
 // La URL base apunta a las secciones, ya que las tareas están anidadas
-const API_URL = '/api/sections/';
+const BASE_ROUTE = '/sections';
 
 // Crear una nueva tarea para una sección
 const createAssignment = async (sectionId, assignmentData, token) => {
     const config = {
         headers: { Authorization: `Bearer ${token}` },
     };
-    const response = await axios.post(API_URL + sectionId + '/assignments', assignmentData, config);
+    const response = await axiosClient.post(`${BASE_ROUTE}/${sectionId}/assignments`, assignmentData, config);
     return response.data;
 };
 
@@ -17,7 +17,7 @@ const getAssignmentsForSection = async (sectionId, token) => {
     const config = {
         headers: { Authorization: `Bearer ${token}` },
     };
-    const response = await axios.get(API_URL + sectionId + '/assignments', config);
+    const response = await axiosClient.get(`${BASE_ROUTE}/${sectionId}/assignments`, config);
     return response.data;
 };
 

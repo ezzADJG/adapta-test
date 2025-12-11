@@ -1,13 +1,12 @@
-import axios from 'axios';
+import axiosClient from '../../config/axiosClient';
 
-const API_URL_ASSIGNMENTS = '/api/assignments/';
-const API_URL_SECTIONS = '/api/sections/'; // Necesitamos esta para la ruta de entrega
-const API_URL_SUBMISSIONS = '/api/submissions/';
+const BASE_SECTIONS = '/sections';
+const BASE_SUBMISSIONS = '/submissions';
 
 // Función del estudiante (ya corregida)
 const createSubmission = async (sectionId, assignmentId, submissionData, token) => {
     const config = { headers: { Authorization: `Bearer ${token}` } };
-    const response = await axios.post(`${API_URL_SECTIONS}${sectionId}/assignments/${assignmentId}/submit`, submissionData, config);
+    const response = await axiosClient.post(`${BASE_SECTIONS}/${sectionId}/assignments/${assignmentId}/submit`, submissionData, config);
     return response.data;
 };
 
@@ -15,14 +14,14 @@ const createSubmission = async (sectionId, assignmentId, submissionData, token) 
 const getSubmissionsForAssignment = async (sectionId, assignmentId, token) => {
     const config = { headers: { Authorization: `Bearer ${token}` } };
     // Construimos la URL anidada correcta
-    const response = await axios.get(`${API_URL_SECTIONS}${sectionId}/assignments/${assignmentId}/submissions`, config);
+    const response = await axiosClient.get(`${BASE_SECTIONS}/${sectionId}/assignments/${assignmentId}/submissions`, config);
     return response.data;
 };
 
 // 👇 NUEVA FUNCIÓN: Calificar una entrega específica
 const gradeSubmission = async (submissionId, gradeData, token) => {
     const config = { headers: { Authorization: `Bearer ${token}` } };
-    const response = await axios.put(`${API_URL_SUBMISSIONS}${submissionId}/grade`, gradeData, config);
+    const response = await axiosClient.put(`${BASE_SUBMISSIONS}/${submissionId}/grade`, gradeData, config);
     return response.data;
 };
 
@@ -30,7 +29,7 @@ const gradeSubmission = async (submissionId, gradeData, token) => {
 const getMySubmission = async (sectionId, assignmentId, token) => {
     const config = { headers: { Authorization: `Bearer ${token}` } };
     // Construimos la URL completa y correcta
-    const response = await axios.get(`${API_URL_SECTIONS}${sectionId}/assignments/${assignmentId}/mysubmission`, config);
+    const response = await axiosClient.get(`${BASE_SECTIONS}/${sectionId}/assignments/${assignmentId}/mysubmission`, config);
     return response.data;
 };
 
@@ -40,6 +39,5 @@ const submissionService = {
     gradeSubmission,
     getMySubmission
 };
-
 
 export default submissionService;

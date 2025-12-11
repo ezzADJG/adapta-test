@@ -1,6 +1,6 @@
-import axios from 'axios';
+import axiosClient from '../../config/axiosClient';
 
-const API_URL = '/api/courses/';
+const BASE_ROUTE = '/courses';
 
 // Obtener todos los cursos (requiere token)
 const getCourses = async (token) => {
@@ -9,7 +9,7 @@ const getCourses = async (token) => {
             Authorization: `Bearer ${token}`,
         },
     };
-    const response = await axios.get(API_URL, config);
+    const response = await axiosClient.get(BASE_ROUTE, config);
     return response.data;
 };
 
@@ -18,13 +18,13 @@ const getMyCourses = async (token) => {
     const config = {
         headers: { Authorization: `Bearer ${token}` },
     };
-    const response = await axios.get(API_URL + 'mycourses', config);
+    const response = await axiosClient.get(`${BASE_ROUTE}/mycourses`, config);
     return response.data;
 };
 
 const createCourse = async (courseData, token) => {
     const config = { headers: { Authorization: `Bearer ${token}` } };
-    const response = await axios.post(API_URL, courseData, config);
+    const response = await axiosClient.post(BASE_ROUTE, courseData, config);
     return response.data;
 };
 
@@ -36,7 +36,7 @@ const uploadSyllabus = async (courseId, formData, token) => {
             Authorization: `Bearer ${token}`,
         },
     };
-    const response = await axios.post(`${API_URL}${courseId}/upload-syllabus`, formData, config);
+    const response = await axiosClient.post(`${BASE_ROUTE}/${courseId}/upload-syllabus`, formData, config);
     return response.data;
 };
 

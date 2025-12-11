@@ -1,13 +1,13 @@
-import axios from 'axios';
+import axiosClient from '../../config/axiosClient';
 
-const API_URL = '/api/institutions/';
+const BASE_ROUTE = '/institutions';
 
 // Obtener todas las instituciones
 const getInstitutions = async (token) => {
   const config = {
     headers: { Authorization: `Bearer ${token}` },
   };
-  const response = await axios.get(API_URL, config);
+  const response = await axiosClient.get(BASE_ROUTE, config);
   return response.data;
 };
 
@@ -16,7 +16,7 @@ const createInstitution = async (institutionData, token) => {
   const config = {
     headers: { Authorization: `Bearer ${token}` },
   };
-  const response = await axios.post(API_URL, institutionData, config);
+  const response = await axiosClient.post(BASE_ROUTE, institutionData, config);
   return response.data;
 };
 
