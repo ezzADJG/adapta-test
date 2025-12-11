@@ -226,13 +226,17 @@ const HomePage = () => {
         <LandingFeatures />
 
         {/* LOGO CAROUSEL - MOVIDO DEBAJO DE FEATURES */}
-        <section className="py-16 w-full border-y border-slate-200 dark:border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-sm">
-           <div className="text-center mb-8">
-              <p className="text-sm font-semibold tracking-widest text-slate-500 dark:text-muted-foreground uppercase">
-                Confían en nosotros
+        <section className="py-20 w-full bg-white dark:bg-black/20 border-y border-slate-100 dark:border-white/5">
+           <div className="text-center mb-10 max-w-2xl mx-auto px-6">
+              <h3 className="text-2xl font-bold mb-2 text-slate-800 dark:text-foreground">Confían en nosotros</h3>
+              <p className="text-slate-500 dark:text-muted-foreground">
+                Instituciones líderes que ya transformaron su educación con AdaptaTest.
               </p>
            </div>
-           <LogoCarousel logos={logos} />
+           
+           <div className="flex justify-center grayscale hover:grayscale-0 transition-all duration-500 opacity-80 hover:opacity-100">
+               <LogoCarousel logos={logos} columnCount={3} />
+           </div>
         </section>
 
         {/* PRICING SECTION */}
