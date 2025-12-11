@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+const cors = require('cors');
 
 // Importar nuestras rutas de nivel superior
 const userRoutes = require("./routes/userRoutes");
@@ -28,6 +29,12 @@ connectDB();
 const app = express();
 app.use(express.json()); // ¡Middleware muy importante!
 const path = require("path");
+
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true
+}));
+
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 

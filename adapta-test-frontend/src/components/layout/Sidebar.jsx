@@ -29,10 +29,10 @@ function SidebarLink({ icon: Icon, label, to, active, isCollapsed, isSubItem = f
       to={to}
       className={cn(
         "flex items-center gap-3 py-2.5 rounded-lg transition-all duration-200 group font-medium",
-        // Estilo activo "pestaña"
+        // Estilo activo "pestaña" mejorado
         active
-          ? "bg-primary text-primary-foreground shadow-sm"
-          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+          ? "bg-gradient-to-r from-primary/15 to-primary/5 text-primary border-l-2 border-primary shadow-sm"
+          : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground hover:translate-x-1",
         
         // Colapsado: cuadrado perfecto y centrado
         isCollapsed 
@@ -231,9 +231,9 @@ export function Sidebar({ isCollapsed, onToggle }) {
       <aside
         data-collapsed={isCollapsed}
         className={cn(
-          "bg-card border-r shadow-lg transition-all duration-300 ease-in-out",
+          "bg-card/95 backdrop-blur-xl border-r border-white/10 shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
           "h-screen sticky top-0 left-0 z-40 flex flex-col",
-          isCollapsed ? "w-20" : "w-64"
+          isCollapsed ? "w-20" : "w-72"
         )}
       >
         <div className={cn("h-16 border-b flex items-center transition-all duration-300 relative", isCollapsed ? "justify-center px-2" : "px-4")}>

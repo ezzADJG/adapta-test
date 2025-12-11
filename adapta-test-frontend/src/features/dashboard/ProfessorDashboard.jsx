@@ -61,9 +61,8 @@ const ProfessorDashboard = () => {
                     `Nombre de sección: ${section.name || section.sectionCode || "-"}`,
                     `Capacidad: ${section.capacity ?? "-" } alumnos`,
                   ]}
-                  color="#0ea5e9"
-                  actionLabel="Gestionar Sección"
                   actionHref={`/manage/section/${section._id}`}
+                  className="bg-card glass-card" // Añadir clase glass si es posible
                 />
               </div>
             ))}

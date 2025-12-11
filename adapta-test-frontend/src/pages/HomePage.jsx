@@ -96,49 +96,33 @@ const Header = () => {
   };
 
   return (
-    <header style={{ 
-      padding: '20px', 
-      borderBottom: '1px solid #2a2a2aff', 
-      display: 'flex', 
-      justifyContent: 'space-between', 
-      alignItems: 'center'
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Link to="/" style={{ 
-          textDecoration: 'none', 
-          color: 'white', 
-          fontSize: '1.5rem',
-          display: 'flex',
-          alignItems: 'center'
-        }}>
-          <Text_03 text='AdaptaTest'/>
+    <header className="px-6 py-4 flex justify-between items-center bg-transparent backdrop-blur-sm sticky top-0 z-50">
+      <div className="flex items-center">
+        <Link to="/" className="text-2xl font-bold font-heading text-foreground flex items-center gap-2 group">
+           <div className="h-8 w-8 bg-black dark:bg-white rounded-lg flex items-center justify-center">
+              <span className="text-white dark:text-black text-sm font-bold">A</span>
+           </div>
+           <span className="group-hover:opacity-80 transition-opacity">AdaptaTest</span>
         </Link>
       </div>
       <nav>
-        <ul style={{ 
-          listStyle: 'none', 
-          margin: 0, 
-          padding: 0,
-          display: 'flex', 
-          gap: '20px',
-          alignItems: 'center'
-        }}>
+        <ul className="flex gap-6 items-center list-none m-0 p-0">
           {user ? (
             <>
-              <li style={{ display: 'flex', alignItems: 'center' }}>
-                <HoverButton as={Link} to="/dashboard">
+              <li>
+                <HoverButton as={Link} to="/dashboard" className="font-medium text-sm">
                   Dashboard
                 </HoverButton>
               </li>
-              <li style={{ display: 'flex', alignItems: 'center' }}>
-                <HoverButton onClick={onLogout}>
+              <li>
+                <HoverButton onClick={onLogout} className="font-medium text-sm text-muted-foreground hover:text-destructive transition-colors">
                   Logout
                 </HoverButton>
               </li>
             </>
           ) : (
-            <li style={{ display: 'flex', alignItems: 'center' }}>
-              <HoverButton as={Link} to="/login">
+            <li>
+              <HoverButton as={Link} to="/login" className="font-medium text-sm">
                 Login
               </HoverButton>
             </li>
@@ -212,39 +196,79 @@ function Footer() {
 // Main HomePage Component
 const HomePage = () => {
   return (
-    <div className="bg-black text-white w-full min-h-screen flex flex-col">
+    <div className="bg-background text-foreground w-full min-h-screen flex flex-col relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 z-0">
+         <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+         <div className="absolute top-0 -right-4 w-72 h-72 bg-indigo-500/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+         <div className="absolute -bottom-8 left-20 w-72 h-72 bg-blue-500/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
+      </div>
+
       {/* Header */}
-      <Header />
+      <div className="z-50 relative">
+        <Header />
+      </div>
       
       {/* Main Content */}
-      <div className="bg-black text-white w-full flex-1 space-y-28 relative max-w-screen overflow-x-hidden font-sans">
-        <div className="flex flex-col items-center text-center px-10 z-10 pt-16 pb-10">
-          <BlurFade delay={0.5} inView>
-            <div style={{display: "flex", justifyContent: "center", alignItems: "center", paddingTop: "30px"}}>
-              <img src="https://i.ibb.co/C3m7Fzr2/logo.png" alt="" className="w-1/3 object-cover transition-transform duration-500 group-hover:scale-110"/>
-            </div>
-          </BlurFade>
-          <HyperText
-            className="text-1xl font-bold text-white"
-            text="Adaptando la forma de aprender"
-          />
-          <div className="flex flex-col items-center text-center px-10 z-10 pt-10">
-            <h2 className="mb-8">Nuestros Socios</h2>
-            <div className="w-full max-w-xl mx-auto">
-              <LogoCarousel 
-                logos={logos} 
-                columnCount={4}
-              />
+      <div className="w-full flex-1 relative z-10 font-sans flex flex-col justify-center">
+        <div className="flex flex-col items-center text-center px-6 lg:px-10 pt-16 pb-20 max-w-5xl mx-auto space-y-12">
+          
+          {/* Hero Section */}
+          <div className="space-y-6">
+            <BlurFade delay={0.2} inView>
+              <div className="flex justify-center mb-6">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary to-indigo-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                  <img 
+                    src="https://i.ibb.co/C3m7Fzr2/logo.png" 
+                    alt="Logo" 
+                    className="relative w-32 h-32 md:w-40 md:h-40 object-cover transition-transform duration-500 group-hover:scale-110 drop-shadow-2xl"
+                  />
+                </div>
+              </div>
+            </BlurFade>
+
+            <div className="space-y-4">
+              <BlurFade delay={0.4} inView>
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-heading tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
+                  AdaptaTest
+                </h1>
+              </BlurFade>
+              <BlurFade delay={0.6} inView>
+                <HyperText
+                  className="text-xl md:text-2xl font-light text-muted-foreground"
+                  text="Adaptando la forma de aprender"
+                />
+              </BlurFade>
             </div>
           </div>
-          <ModernTeamShowcase teamMembers={teamData} />
+
+          {/* Social Proof */}
+          <BlurFade delay={0.8} inView className="w-full">
+            <div className="flex flex-col items-center space-y-8 mt-8">
+              <span className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Confían en nosotros</span>
+              <div className="w-full max-w-4xl bg-card/30 backdrop-blur-sm rounded-2xl border border-white/5 p-8">
+                <LogoCarousel 
+                  logos={logos} 
+                  columnCount={4}
+                />
+              </div>
+            </div>
+          </BlurFade>
+
+          {/* Team Section */}
+          <BlurFade delay={1.0} inView className="w-full pt-10">
+             <ModernTeamShowcase teamMembers={teamData} />
+          </BlurFade>
+
         </div>
-        {/* Gradient Glow */}
-        <div className="absolute bottom-0 left-0 right-0 h-[400px] bg-gradient-to-t from-blue-900/50 via-blue-600/20 to-transparent rounded-t-full opacity-80 blur-3xl"></div>
       </div>
 
       {/* Footer */}
-      <Footer />
+      <div className="relative z-10">
+        <Footer />
+      </div>
     </div>
   );
 };

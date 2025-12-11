@@ -24,7 +24,7 @@ const DashboardLayout = () => {
       >
         <DashboardHeader /> {/* onToggle eliminado */}
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
-          <div className="max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="max-w-7xl mx-auto w-full animate-fade-in duration-700">
             <Outlet />
           </div>
         </main>

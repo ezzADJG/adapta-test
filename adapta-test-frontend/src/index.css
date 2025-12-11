@@ -4,27 +4,24 @@
 
 @layer base {
   :root {
-    /* Paleta de Colores "Azure" (Modo Claro) */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Paleta Premium "Indigo-Slate" (Modo Claro) */
+    --background: 210 40% 98%; /* Slate-50 - Fondo muy suave */
+    --foreground: 222.2 84% 4.9%; /* Slate-950 */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 222.2 84% 4.9%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-
-    --primary: 221.2 83.2% 53.3%; /* <-- Azul Primario */
+    --primary: 226 70% 55.5%; /* Indigo-600 - Vibrante y profesional */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
+    --secondary: 210 40% 96.1%; /* Slate-100 */
     --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%; /* Slate-500 */
 
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
@@ -32,32 +29,32 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --ring: 221.2 83.2% 53.3%; /* <-- Azul para Foco */
+    --border: 214.3 31.8% 91.4%; /* Slate-200 */
+    --input: 214.3 31.8% 91.4%;
+    --ring: 226 70% 55.5%; /* Match Primary */
+
     --radius: 0.75rem;
   }
 
   .dark {
-    /* Paleta de Colores "Azure" (Modo Oscuro) */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Paleta Premium "Space" (Modo Oscuro) */
+    --background: 222.2 84% 4.9%; /* Slate-950 - Fondo profundo */
+    --foreground: 210 40% 98%; /* Slate-50 */
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --card: 217.2 32.6% 12%; /* Slate-900 un poco más claro */
+    --card-foreground: 210 40% 98%;
 
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-
-    --primary: 217.2 91.2% 59.8%; /* <-- Azul Primario (Claro) */
+    --primary: 226 70% 65%; /* Indigo-400 - Más luminoso para fondo oscuro */
     --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 217.2 32.6% 17.5%; /* Slate-800 */
     --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
@@ -65,7 +62,9 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --ring: 217.2 91.2% 59.8%; /* <-- Azul para Foco (Claro) */
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 226 70% 65%;
   }
 }
 
@@ -74,26 +73,47 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-semibold tracking-tight;
   }
 }
 
 @layer utilities {
-  .animate-collapsible-down {
-    animation: collapsible-down 0.2s ease-out;
+  .glass {
+    @apply bg-white/70 dark:bg-black/40 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-sm;
   }
-  .animate-collapsible-up {
-    animation: collapsible-up 0.2s ease-out;
+  
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-sm border border-border/50 shadow-sm transition-all hover:shadow-md;
+  }
+  
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+  
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  
+  .animation-delay-4000 {
+    animation-delay: 4s;
   }
 }
 
-@keyframes collapsible-down {
-  from { height: 0 }
-  to { height: var(--radix-collapsible-content-height) }
-}
-
-@keyframes collapsible-up {
-  from { height: var(--radix-collapsible-content-height) }
-  to { height: 0 }
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
 }

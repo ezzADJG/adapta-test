@@ -16,19 +16,12 @@ export default function CardFlip({
     'Zero Setup Required',
   ],
 
-  color = '#006ef4ff',
-  // nueva API para el CTA inferior
-  actionLabel = 'Start Building',
-  actionHref = null,
   actionOnClick = null,
 }) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
     <div
-      style={{
-        ["--primary"]: color ?? '#2563eb',
-      }}
       className="group relative h-[360px] w-full max-w-[300px] [perspective:2000px]"
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => setIsFlipped(false)}>

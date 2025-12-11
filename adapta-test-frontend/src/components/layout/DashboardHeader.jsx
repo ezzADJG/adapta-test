@@ -9,8 +9,8 @@ export function DashboardHeader() { // isCollapsed y onToggle ELIMINADOS
   const { user } = useSelector((state) => state.auth);
   return (
     <header className={cn(
-      "h-16 border-b bg-card/70 flex items-center justify-between px-6 lg:px-8",
-      "sticky top-0 z-30 backdrop-blur-sm"
+      "h-16 border-b border-border/40 bg-background/60 flex items-center justify-between px-6 lg:px-8",
+      "sticky top-0 z-30 backdrop-blur-xl transition-all"
     )}>
       <div className="flex items-center">
         {/* Aquí podríamos poner Breadcrumbs o el título de la página en el futuro */}

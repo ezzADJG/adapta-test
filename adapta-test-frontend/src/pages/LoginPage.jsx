@@ -133,17 +133,18 @@ const LoginPage = () => {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 relative"
+      className="min-h-screen w-full flex items-center justify-center bg-background relative"
       style={{
         margin: 0,
         padding: "20px",
       }}
     >
-      <div className="absolute top-4 left-4 h-10 w-10">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/5 z-0" />
+      <div className="absolute top-4 left-4 h-10 w-10 z-10">
         <ThemeToggle />
       </div>
-      <BlurFade inView delay={0.1}>
-        <Card className="w-full max-w-md shadow-lg rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+      <BlurFade inView delay={0.1} className="z-10 w-full max-w-md">
+        <Card className="w-full shadow-2xl rounded-2xl border-border/50 bg-card/80 backdrop-blur-md">
           <CardHeader>
             <div>
               <Link
