@@ -69,13 +69,13 @@ const TeamMemberCard = React.memo(({ member, index }) => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-      className="group relative aspect-[3/4] w-full max-w-xs mx-auto rounded-xl bg-gray-900/25 shadow-2xl"
+      className="group relative aspect-[3/4] w-full max-w-xs mx-auto rounded-xl bg-white/5 dark:bg-white/5 shadow-xl backdrop-blur-sm border border-white/20 dark:border-white/10"
     >
       <div
         style={{ transform: "translateZ(50px)", transformStyle: "preserve-3d" }}
-        className="absolute inset-3 flex flex-col items-center text-center bg-gray-800/10 backdrop-blur-md p-4 rounded-lg border border-gray-700"
+        className="absolute inset-3 flex flex-col items-center text-center bg-white/30 dark:bg-black/20 backdrop-blur-md p-4 rounded-lg border border-white/40 dark:border-white/10 shadow-inner"
       >
-        <div className="relative w-36 h-36 rounded-full overflow-hidden border-2 border-slate-600 mb-3">
+        <div className="relative w-36 h-36 rounded-full overflow-hidden border-4 border-white/50 dark:border-white/10 mb-3 shadow-lg">
           <img
             src={member.avatar}
             alt={`Portrait of ${member.name}`}
@@ -88,8 +88,8 @@ const TeamMemberCard = React.memo(({ member, index }) => {
           />
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         </div>
-        <h3 className="text-lg font-semibold text-white">{member.name}</h3>
-        <p className="text-sm text-blue-400">{member.title}</p>
+        <h3 className="text-lg font-bold text-foreground">{member.name}</h3>
+        <p className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">{member.title}</p>
 
         <div className="flex items-center space-x-4 mt-auto">
           {Object.entries(member.socials).map(([key, link], i) => {
@@ -99,7 +99,7 @@ const TeamMemberCard = React.memo(({ member, index }) => {
                 key={key}
                 href={link}
                 aria-label={`${member.name}'s ${key}`}
-                className="text-gray-400 hover:text-white transition-all duration-300 opacity-0 group-hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full"
+                className="text-muted-foreground hover:text-indigo-600 dark:hover:text-white transition-all duration-300 opacity-0 group-hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full"
                 style={{ transitionDelay: `${i * 100}ms` }}
               >
                 <Icon />
@@ -121,7 +121,7 @@ const ModernTeamShowcase = ({ teamMembers = [], tagline }) => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8, ease: "easeInOut" }}
-          className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 text-white"
+          className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 text-foreground"
         >
           Conoce a los desarrolladores
         </motion.h1>
@@ -129,14 +129,14 @@ const ModernTeamShowcase = ({ teamMembers = [], tagline }) => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.8, ease: "easeInOut" }}
-          className="text-base text-gray-400 max-w-2xl"
+          className="text-base text-muted-foreground max-w-2xl"
         >
           {tagline ||
             "Las personas que hicieron posible adaptar tu aprendizaje"}
         </motion.p>
       </div>
 
-      <div className="relative z-10 w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="relative z-10 w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-8">
         {teamMembers.map((member, index) => (
           <TeamMemberCard key={member.name} member={member} index={index} />
         ))}
