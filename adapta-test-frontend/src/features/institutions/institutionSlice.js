@@ -60,14 +60,7 @@ export const institutionSlice = createSlice({
       .addCase(createInstitution.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        // --- CORRECCIÓN AQUÍ ---
-        // Extraemos solo el objeto 'institution' de la respuesta compleja del backend
-        if (action.payload.institution) {
-            state.institutions.push(action.payload.institution);
-        } else {
-            // Fallback por si acaso la estructura cambia
-            state.institutions.push(action.payload);
-        }
+        state.institutions.push(action.payload); // Añadimos la nueva a la lista
       })
       .addCase(createInstitution.rejected, (state, action) => {
         state.isLoading = false;

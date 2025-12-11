@@ -1,23 +1,20 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const institutionSchema = mongoose.Schema(
-  {
+const institutionSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    code: { type: String, required: true, unique: true },
-    type: { type: String, enum: ["university", "high_school"], required: true },
-    // NUEVO: Vinculación con el Plan
-    plan: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Plan",
-      required: false // Opcional al principio, o obligatorio si decides
+    code: { type: String, required: true, unique: true }, // Ej: "UTP", "SANMARTIN"
+    type: {
+        type: String,
+        enum: ['university', 'high_school'],
+        required: true
     },
     settings: {
-      maxStudentsPerSection: { type: Number, default: 30 },
-      allowParentAccess: { type: Boolean, default: false },
+        maxStudentsPerSection: { type: Number, default: 30 },
+        allowParentAccess: { type: Boolean, default: false },
+        gradingScale: { type: String, default: '0-20' },
+        requiresPrerequisites: { type: Boolean, default: true }
     },
-    isActive: { type: Boolean, default: true },
-  },
-  { timestamps: true }
-);
+    isActive: { type: Boolean, default: true }
+}, { timestamps: true });
 
-module.exports = mongoose.model("Institution", institutionSchema);
+module.exports = mongoose.model('Institution', institutionSchema);
