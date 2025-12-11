@@ -6,7 +6,7 @@ const academicCycleSchema = new mongoose.Schema(
       // ej: "2026-I", "Verano 2027"
       type: String,
       required: true,
-      unique: true,
+      // unique: true, <--- ELIMINADO: La unicidad ahora es compuesta por institución
     },
     startDate: {
       type: Date,
@@ -29,5 +29,8 @@ const academicCycleSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Asegurar unicidad por nombre E institución (Compound Index)
+academicCycleSchema.index({ name: 1, institution: 1 }, { unique: true });
 
 module.exports = mongoose.model("AcademicCycle", academicCycleSchema);

@@ -50,10 +50,10 @@ const careerSchema = new mongoose.Schema(
   }
 );
 
-// Para asegurar que no se repitan números de ciclo en la misma carrera.
-careerSchema.index(
-  { "curriculum.cycleNumber": 1 },
-  { unique: true, sparse: true }
-);
+// Eliminado índice global problemático que impedía ciclos repetidos en diferentes carreras
+// careerSchema.index(
+//   { "curriculum.cycleNumber": 1 },
+//   { unique: true, sparse: true }
+// );
 
 module.exports = mongoose.model("Career", careerSchema);
