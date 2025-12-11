@@ -31,7 +31,8 @@ app.use(express.json()); // ¡Middleware muy importante!
 const path = require("path");
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  // 'origin: *' permite el acceso desde cualquier lugar (Vercel previews, localhost, etc.)
+  origin: '*', 
   credentials: true
 }));
 
