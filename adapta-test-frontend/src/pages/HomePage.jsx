@@ -53,7 +53,6 @@ const footerLinks = [
     label: 'Product',
     links: [
       { title: 'Features', href: '#features' },
-      { title: 'Pricing', href: '#pricing' },
       { title: 'Testimonials', href: '#testimonials' },
       { title: 'Integration', href: '/' },
     ],
@@ -106,7 +105,6 @@ const Header = () => {
       </div>
       <nav className="hidden md:flex space-x-8">
         <a href="#features" className="text-slate-700 dark:text-foreground hover:text-indigo-600 dark:hover:text-indigo-500 font-medium transition-colors">Características</a>
-        <a href="#pricing" className="text-slate-700 dark:text-foreground hover:text-indigo-600 dark:hover:text-indigo-500 font-medium transition-colors">Planes</a>
         <a href="#developers" className="text-slate-700 dark:text-foreground hover:text-indigo-600 dark:hover:text-indigo-500 font-medium transition-colors">Equipo</a>
       </nav>
       <div className="flex items-center space-x-4">
@@ -239,8 +237,8 @@ const HomePage = () => {
            </div>
         </section>
 
-        {/* PRICING SECTION */}
-        <LandingPricing />
+        {/* PRICING SECTION - REMOVED */}
+
 
         {/* DEVELOPERS SECTION */}
         <div id="developers" className="py-24 bg-gradient-to-b from-transparent to-indigo-50 dark:to-indigo-900/10">
