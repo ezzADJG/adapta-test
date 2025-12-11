@@ -5,7 +5,7 @@ import { BrainCircuit, Layers, Share2, BarChart3, ShieldCheck, Zap } from 'lucid
 const features = [
   {
     icon: BrainCircuit,
-    title: "IA Adaptativa",
+    title: "Aprendizaje Adaptativo",
     description: "Nuestros algoritmos ajustan el contenido en tiempo real según tu ritmo de aprendizaje."
   },
   {
