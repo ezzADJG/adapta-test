@@ -1,6 +1,6 @@
 // src/features/users/usersSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axiosClient from "../../config/axiosClient";
 
 const initialState = {
   users: [], // <-- NUEVO: Para la lista general de usuarios
@@ -17,7 +17,7 @@ export const getUsers = createAsyncThunk(
       const token = thunkAPI.getState().auth.user.token;
       const config = { headers: { Authorization: `Bearer ${token}` } };
       // La ruta /api/users ya está preparada en el backend para filtrar por institución
-      const response = await axios.get("/api/users", config);
+      const response = await axiosClient.get("/users", config);
       return response.data;
     } catch (error) {
       // Manejar el error
@@ -32,7 +32,7 @@ export const getCoordinators = createAsyncThunk(
   async (_, thunkAPI) => {
     const token = thunkAPI.getState().auth.user.token;
     const config = { headers: { Authorization: `Bearer ${token}` } };
-    const response = await axios.get("/api/users?role=coordinator", config);
+    const response = await axiosClient.get("/users?role=coordinator", config);
     return response.data;
   }
 );
@@ -43,7 +43,7 @@ export const getProfessors = createAsyncThunk(
   async (_, thunkAPI) => {
     const token = thunkAPI.getState().auth.user.token;
     const config = { headers: { Authorization: `Bearer ${token}` } };
-    const response = await axios.get("/api/users?role=professor", config);
+    const response = await axiosClient.get("/users?role=professor", config);
     return response.data;
   }
 );
