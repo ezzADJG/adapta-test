@@ -5,7 +5,7 @@ const BASE_ROUTE = '/users';
 
 // NUEVA FUNCIÓN: Obtener la lista de instituciones para el selector
 const getInstitutions = async () => {
-    const response = await axiosClient.get(`${BASE_ROUTE}/institutions`);
+    const response = await axiosClient.get(`/institutions`);
     return response.data;
 };
 
