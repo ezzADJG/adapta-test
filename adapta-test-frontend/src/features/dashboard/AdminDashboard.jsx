@@ -508,7 +508,8 @@ const AcademicManagementTab = ({ courses, professors, cycles }) => {
     };
     try {
       const token = store.getState().auth.user.token;
-      await axios.post(`/api/courses/${selectedCourse}/sections`, sectionData, {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      await axios.post(`${apiUrl}/courses/${selectedCourse}/sections`, sectionData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("¡Sección creada exitosamente!");
