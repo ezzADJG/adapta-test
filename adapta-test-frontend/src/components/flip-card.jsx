@@ -17,6 +17,8 @@ export default function CardFlip({
   ],
 
   actionOnClick = null,
+  actionHref = null,
+  actionLabel = "Ver más",
 }) {
   const [isFlipped, setIsFlipped] = useState(false);
 
